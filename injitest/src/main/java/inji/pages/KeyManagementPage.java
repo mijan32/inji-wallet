@@ -40,6 +40,10 @@ public class KeyManagementPage extends BasePage {
     private WebElement ECCR1Text;
 
 
+    @AndroidFindBy(xpath = "//android.widget.TextView[@resource-id=\"listItemTitle\" and @text=\"ECC K1\"]")
+    @iOSXCUITFindBy(xpath = "(//XCUIElementTypeOther[@name=\"ED25519 \uE25D\"])[2]")
+    private WebElement ECCK1Text;
+
 
     @AndroidFindBy(accessibility = "keyTypeVcDetailViewValue")
     @iOSXCUITFindBy(accessibility = "saveKeyOrderingPreference")
@@ -78,6 +82,11 @@ public class KeyManagementPage extends BasePage {
     public WebElement getTheCoordinatesECCR1TextText(){
         ECCR1Text.isDisplayed();
         return ECCR1Text;
+    }
+
+    public WebElement getTheCoordinatesECCk1TextText(){
+        ECCK1Text.isDisplayed();
+        return ECCK1Text;
     }
 
     public void clickOnSaveKeyOrderingPreferenceButton() {
