@@ -23,13 +23,16 @@ sequenceDiagram
   Note over VCI_Lib: Issuer Metadata is temporarily cached
   VCI_Lib -->> W: 4. Return Issuer well-known metadata
   Note over W: Cache the Issuer Metadata for future use
-  W ->> VCI_Lib: 5. Download credential request from Trusted Issuer
+  Note over W: User selects one of the supported credentials
+  W ->> VCI_Lib: 5. Request Credential from Issuer
+  VCI_Lib -->> W: 6. Authorize user for credential request and get authorization code and access token
+  W ->> VCI_Lib: 7. Provide authorization code and access token
   Note over VCI_Lib: Construct the request body for credential request
-  VCI_Lib ->> Issuer: 6. Credential Request
-  Issuer -->> VCI_Lib: 7. Return vc+sd-jwt format specific Credential response
-  VCI_Lib -->> W: 8. Return vc+sd-jwt Credential
-  W ->> VCVerifier: 9. Verify sd-jwt Credential
-  VCVerifier -->> W: 10. Return Verification Result
+  VCI_Lib ->> Issuer: 8. Credential Request
+  Issuer -->> VCI_Lib: 9. Return vc+sd-jwt format specific Credential response
+  VCI_Lib -->> W: 10. Return vc+sd-jwt Credential
+  W ->> VCVerifier: 11. Verify sd-jwt Credential
+  VCVerifier -->> W: 12. Return Verification Result
   Note over W: If verification is successful, proceed to save the credential
   Note over W: Use cached Issuer Metadata for rendering
   
@@ -95,7 +98,7 @@ _inji-vci-client_ receives Issuer's metadata response.
 ##### 4. Return Issuer Metadata Response
 Once the response is received in _inji-vci-client_, it is returned to the Wallet.
 
-##### 5. Download credential request from Trusted Issuer
+##### 5. Request Credential from Issuer
 
 ````
 VCIClient.requestCredentialFromTrustedIssuer(
@@ -116,7 +119,19 @@ Note:
 - getProofJwt is a callback function to create the proof JWT for the credential request.
 ````
 
-##### 6. Create Credential Request and send to Issuing Authority
+##### 6. Authorize user for credential request and get authorization code and access token
+_inji-vci-client_ uses `authorizeUser` callback function to authorize the user for the credential request. 
+This typically involves redirecting the user to an authorization server where they can log in and grant permission 
+for the credential request.
+Once authorization code is received, _inji-vci-client_ uses `getTokenResponse` callback function to exchange the 
+authorization code for an access token.
+For more details check [VCI Client Library](https://github.com/mosip/inji-vci-client/blob/master/kotlin/README.md)
+
+##### 7. Provide authorization code and access token
+When the user has successfully authorized the request, the _inji-vci-client_ will receive an authorization code and access token.
+
+
+##### 8. Create Credential Request and send to Issuing Authority
 _inji-vci-client_ will use `CredentialRequestFactory` and create `SdJwtCredentialRequest` request with following body:
 
 ````
@@ -132,14 +147,14 @@ _inji-vci-client_ will use `CredentialRequestFactory` and create `SdJwtCredentia
 ````
 and send it to the issuing authority.
 
-##### 7. Receive the Credential Response
+##### 9. Receive the Credential Response
 The _inji-vci-client_ receives the credential response as jwt string
 
 ```
 "eyJraWQiOiJkaWQ6ZXhhbXBsZ.eyJpc3N1YW5jZURhdGUiOiIyM.KPxgihac0aW9EkL1nOzM~disclousure1~disclousure1~"
 ```
 
-##### 8. Return the Credential Response
+##### 10. Return the Credential Response
 Once the response is received in _inji-vci-client_, it is returned to the Wallet.
 
 ````
@@ -149,7 +164,7 @@ Once the response is received in _inji-vci-client_, it is returned to the Wallet
   "credentialConfigurationId": "SD_JWT_VC_example_in_OpenID4VCI"
 }
 ````
-##### 9. Perform vc verification
+##### 11. Perform vc verification
 
 After obtaining the credential from the issuing authority through the _inji-vci-client_ library, a verification process ensures that the issued Verifiable Credential (VC) remains unaltered through _vc-verifier_ library.
 
@@ -165,7 +180,7 @@ VCVerifier.verify(
 )
 ````
 
-##### 10. Return VC verification Result
+##### 12. Return VC verification Result
 After verifying the VC, return verification result
 
 ````
