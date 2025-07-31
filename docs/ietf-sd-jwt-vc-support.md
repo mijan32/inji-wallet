@@ -1,6 +1,11 @@
-## Support of credential format vc+sd-jwt
+## Support of credential format vc+sd-jwt/dc+sd-jwt in Inji Wallet
 
 This document provides a comprehensive overview of the process for downloading and rendering an IETF SD-JWT VC, adhering to the OpenID4VCI specification.
+
+### Scope
+- SD-JWT VC download, verification, and rendering in Inji Wallet.
+- vc+sd-jwt/dc+sd-jwt credential format for SD-JWT. All non-normative examples are referred for `vc+sd-jwt` format.
+- Cryptographic Key Binding - JWK is being used for cryptographic key binding in SD-JWT VC.
 
 ### Actors involved
 1. Inji Wallet
@@ -200,3 +205,8 @@ After verifying the VC, return verification result
     - As per OpenID4VCI Draft 13, the order property in the issuer’s well-known configuration defines the order of fields to be displayed.
 
 This structured approach ensures that the credential is rendered accurately and efficiently while maintaining a lightweight storage and transmission footprint.
+
+
+### Out of scope
+- Revocation - Inji Wallet doesn't support revocation for any credential format. So this document does not cover revocation of IETF SD-JWT VC.
+- SVG Rendering - Inji Wallet does not support SVG rendering for any credential format. So this document does not cover SVG rendering of IETF SD-JWT VC.
