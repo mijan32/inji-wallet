@@ -94,7 +94,6 @@ export const VCCardView: React.FC<VCItemProps> = ({
   if (!isVCLoaded(controller.credential) || !wellknown || !vc) {
     return <VCCardSkeleton />;
   }
-  
   const CardViewContent = () => (
     <VCCardViewContent
       vcMetadata={vcMetadata}

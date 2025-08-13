@@ -61,7 +61,6 @@ async function verifyCredentialForAndroid(
     typeof verifiableCredential === 'string'
       ? verifiableCredential
       : JSON.stringify(verifiableCredential);
-
   const vcVerifierResult = await vcVerifier.verifyCredentials(
     credentialString,
     credentialFormat,
@@ -73,7 +72,7 @@ async function verifyCredentialForIos(
   verifiableCredential: Credential,
   credentialFormat: string,
 ): Promise<VerificationResult> {
-  if (credentialFormat === VCFormat.mso_mdoc) {
+  if (credentialFormat === VCFormat.mso_mdoc || credentialFormat === VCFormat.vc_sd_jwt || credentialFormat === VCFormat.dc_sd_jwt) {
     return createSuccessfulVerificationResult();
   }
   /*
