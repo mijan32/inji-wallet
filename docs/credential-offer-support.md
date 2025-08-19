@@ -27,17 +27,16 @@ sequenceDiagram
   
   Note over Certify: Generate QR code to issue credential
   W->>Certify: 1. Scan QR code
-  W->>VCI: 2. Pass scanned credential offer info
+  W->>VCI: 2. Pass scanned credential offer info<br/>VCIClient.requestCredentialByCredentialOffer
   Note over VCI: Process credential offer by uri or object
   VCI->>Certify: 3. Fetch Issuer metadata<br/>(GET /.well-known/openid-credential-issuer)
   Certify-->>VCI: 4. Receive Issuer metadata
   Note over VCI: Issuer Metadata is temporarily cached
-  Note over VCI: Identify the flow type based on the credential offer
-  Certify->>Certify: 5. Identify the flow type based on the credential offer
+  VCI->>VCI: 5. Identify the flow type based on the credential offer
   alt 5.1 If pre-authorized code flow
     VCI->>VCI: 5.1.1 Auth server discovery
     alt Requires tx_code
-      VCI-->>W: 5.1.2 Request for tx_code
+      VCI-->>W: 5.1.2 Request for tx_code<br/>getTxCode(inputMode, description, length)
       U->>W: 5.1.3 User provides tx_code
       W->>VCI: 5.1.4 Return tx_code
       Note over VCI: Create token request with tx_code
@@ -47,7 +46,7 @@ sequenceDiagram
   else 5.2 If authorization code flow
     VCI->>VCI: 5.2.1 Auth server discovery
     Note over VCI: create authorization url
-    VCI-->>W: 5.2.2 Request authorization code
+    VCI-->>W: 5.2.2 Request authorization code<br/>authorizeUser(authorizationUrl)
     W->>AS: 5.2.3 Redirect to Authorization Server
     U->>AS: 5.2.4 User authentication and authorization
     AS-->>W: 5.2.5 Redirect back to Wallet with authorization code
@@ -58,10 +57,13 @@ sequenceDiagram
     W->>AS: 7. Request access token
     AS-->>W: 8. Return access token with cNonce
     W->>VCI: 9. Return access token with cNonce
+    VCI-->>W: 10. Request for proof JWT<br/>getProofJwt(Issuer, cNonce, jwtProofAlgoSupported)
+    Note over W: Create proof JWT
+    W->>VCI: 11. Return proof JWT
     Note over VCI: Construct the request body for credential request
-    VCI->>Certify: 10. Credential Request
-    Certify-->>VCI: 11. Return credential response
-    VCI-->>W: 12. Return credential response
+    VCI->>Certify: 12. Credential Request
+    Certify-->>VCI: 13. Return credential response
+    VCI-->>W: 14. Return credential response
 ```
 
 
@@ -227,8 +229,9 @@ The _inji-vci-client_ creates an authorization URL and requests the Wallet to re
     "redirect_uri": "https://your-redirect-uri.com",
     "scope": "openid vc_scope",
     "state": "random_state_value"
-    "code_verifier": "random string"
-    "code-challenge": "random string"
+    "code_challenge_method": "S256"
+    "code_challenge": "random string",
+    "nonce": "random string"
 }
 ````
 
@@ -266,27 +269,35 @@ The authorization server returns the access token along with a cNonce (client no
 #### 9. Return access token with cNonce
 The wallet returns the access token along with a cNonce (client nonce) to the _inji-vci-client_.
 
-#### 10. Credential Request
+#### 10. Request proof JWT
+The _inji-vci-client_ requests proof jwt based on jwt algorithms supported by Issuer.
+
+#### 11. Return proof JWT
+The wallet returns the proof JWT to the _inji-vci-client_.
+
+#### 12. Credential Request
 The _inji-vci-client_ constructs the request body for the credential request using the access token and cNonce. 
 It then sends the credential request to the issuing authority.
 
 Request is constructed based on credential format - ldp_vc, mso_mdoc.
 
-#### 11. Return credential response
+#### 13. Return credential response
 The issuing authority processes the credential request and returns the credential response to the _inji-vci-client_.
 Credential response is json if credential format is ldp_vc, and it's base64 url encoded CBOR data if credential format is mso_mdoc.
 
 ```
 {  
-    "credential": "....."  
+    "credential": "....."
 }
 ```
 
-#### 12. Return credential response
+#### 14. Return credential response
 The _inji-vci-client_ returns the credential response to the Wallet.
 
 ```
 {  
-    "credential": "<base-64-url-encoded-cbor-data>"  
+    "credential": ".....",
+    "credentialConfigurationId": "credential-config-id",
+    "credentialIssuer": "https://example.com/issuer"
 }  
 ```
